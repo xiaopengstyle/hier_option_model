@@ -32,7 +32,6 @@ if __name__ == '__main__':
     workers = ActorPool([RolloutWorker.remote(config) for i in range(nums)])
     workers.map()
     print(ray.get(a))
-    a =
     print(time.time() - start)
     # workers = ActorPool()
     # gen = ray.get([i.reset.remote() for i in workers])

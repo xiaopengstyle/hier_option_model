@@ -262,7 +262,6 @@ class DQN_Trainer(Trainer):
     game_over = self.ale.game_over()
     num_lives = self.ale.lives()
     current_option = 0
-    current_action = 0
     new_option = self.model.predict_move(s)[0]
     termination = True
     episode_counter = 0

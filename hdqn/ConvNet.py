@@ -105,7 +105,7 @@ def critic_loss_fn(data_batch, model: OptionCnnModel, target_model, config):
     gt = rewards + (1 - dones) * config.gamma *(
         (1 - next_options_term_prob) * next_Q_target[batch_index, options] +
         next_options_term_prob * next_Q_target.max(dim=-1)[0])
-    return (Q[batch_index,options] - gt.detach()).pow(2).mean()
+    return 0.5 * (Q[batch_index,options] - gt.detach()).pow(2).mean()
 
 
 def actor_loss_fn(data_batch, model: OptionCnnModel, target_model, config):
@@ -118,17 +118,18 @@ def actor_loss_fn(data_batch, model: OptionCnnModel, target_model, config):
     option_term_prob = model.get_terminations(states)[batch_index, options]
     next_option_termination_probs = model.get_terminations(next_states)[batch_index, options].detach()
 
-    Q = model.get_Q(states).detach().squeeze()
-    next_Q_target = target_model.get_Q(next_states_target).detach().squeeze()
+    Q = model.get_Q(states).detach()
+    next_Q_target = target_model.get_Q(next_states_target).detach()
 
     gt = rewards + (1 - dones) * config.gamma * (
-        (1 - next_option_termination_probs) * next_Q_target[batch_index,options] +
+        (1 - next_option_termination_probs) * next_Q_target[batch_index, options] +
         next_option_termination_probs * next_Q_target.max(dim=-1)[0])
 
-    term_loss = option_term_prob * (Q[batch_index, options].detach() - Q.max(dim=-1)[0].detach() + config.termination_reg) * (1 - dones)
-    policy_loss = -logp * (gt.detach() - Q[batch_index, options]) - config.entropy_reg * entropy
-    loss = term_loss + policy_loss
-    return loss.mean()
+    term_loss = option_term_prob * (Q[batch_index, options].detach() - Q.max(dim=-1)[0].detach() + config.termination_reg) * (1 -dones)
+    entropy_loss = - config.entropy_reg * entropy
+    policy_loss = -logp * (gt.detach() - Q[batch_index, options].detach())
+    loss = term_loss.mean() + policy_loss.mean() + entropy_loss.mean()
+    return loss
 
 
 

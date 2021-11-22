@@ -227,7 +227,7 @@ def actor_loss(obs, option, logp, entropy, reward, done, next_obs, model, model_
     option_term_prob = model.get_terminations(state)[:, option]
     next_option_term_prob = model.get_terminations(next_state)[:, option].detach()
 
-    Q = model.get_Q(state).detach().squeeze()
+    Q = model.get_Q(state).detach()
     next_Q_prime = model_prime.get_Q(next_state_prime).detach().squeeze()
 
     # Target update gt
